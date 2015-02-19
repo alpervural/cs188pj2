@@ -180,7 +180,40 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        agentIndex = 0
+        numAgents = gameState.getNumAgents()
+        depth = self.depth
+        def value(state, agentIndex, d, A, B):
+          if state.isLose():
+            return (scoreEvaluationFunction(state), None)
+          if state.isWin():
+            return (scoreEvaluationFunction(state), None)
+          if agentIndex == numAgents and d == depth:
+            return (scoreEvaluationFunction(state), None)
+          elif agentIndex == numAgents and d != depth:
+            return value(state, 0, d+1, A, B)
+          legals = state.getLegalActions(agentIndex)
+          best = -float("inf")
+          ind = -1
+          i = -1
+          for action in legals:
+              i+=1
+              succ = state.generateSuccessor(agentIndex, action)
+              val = value(succ,agentIndex+1,d, A, B)[0]
+              if val > best:
+                  best = val
+                  ind = i
+              if agentIndex == 0:
+                  if val > B:
+                      return (val, action)
+                  A = max(A, val)
+              else:
+                  if val < A:
+                      return (val, action)
+                  B = min(B, val)
+          return (best, legals[ind])
+            
+        return value(gameState, 0, 1, -float("inf"), float("inf"))[1]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
