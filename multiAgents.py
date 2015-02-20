@@ -193,22 +193,34 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           elif agentIndex == numAgents and d != depth:
             return value(state, 0, d+1, A, B)
           legals = state.getLegalActions(agentIndex)
-          best = -float("inf")
+          best = 0
+          if agentIndex == 0:
+              best = -float("inf")
+          else:
+              best = float("inf")
           ind = -1
           i = -1
           for action in legals:
+              a = A
+              b = B
               i+=1
               succ = state.generateSuccessor(agentIndex, action)
               val = value(succ,agentIndex+1,d, A, B)[0]
-              if val > best:
-                  best = val
-                  ind = i
               if agentIndex == 0:
+                  if val > best:
+                      best = val
+                      ind = i
                   if val > B:
+                      #print("\n" + str(val) + " pruned " + str(B) + "\n") 
                       return (val, action)
+                  #print("\n" + str(val) + " maxed " + str(A) + "\n") 
                   A = max(A, val)
               else:
+                  if val < best:
+                      best = val
+                      ind = i
                   if val < A:
+                      #print("\n" + str(val) + " pruned " + str(A) + "\n") 
                       return (val, action)
                   B = min(B, val)
           return (best, legals[ind])
@@ -228,7 +240,27 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        agentIndex = 0
+        numAgents = gameState.getNumAgents()
+        depth = self.depth
+        def value(state, agentIndex, d):
+          if state.isLose():
+            return (scoreEvaluationFunction(state), None)
+          if state.isWin():
+            return (scoreEvaluationFunction(state), None)
+          if agentIndex == numAgents and d == depth:
+            return (scoreEvaluationFunction(state), None)
+          elif agentIndex == numAgents and d != depth:
+            return value(state, 0, d+1)
+          legals = state.getLegalActions(agentIndex)
+          succ = [state.generateSuccessor(agentIndex, action) for action in legals]
+          values = [value(newState,agentIndex+1,d)[0] for newState in succ]
+          if agentIndex == 0:
+            return (max(values), legals[values.index(max(values))])
+          avg = sum(values)/max(float(len(values)), 1)
+          return (avg, None)
+        
+        return value(gameState, 0, 1)[1]
 
 def betterEvaluationFunction(currentGameState):
     """
