@@ -153,11 +153,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
         depth = self.depth
         def value(state, agentIndex, d):
           if state.isLose():
-            return (scoreEvaluationFunction(state), None)
+            return (self.evaluationFunction(state), None)
           if state.isWin():
-            return (scoreEvaluationFunction(state), None)
+            return (self.evaluationFunction(state), None)
           if agentIndex == numAgents and d == depth:
-            return (scoreEvaluationFunction(state), None)
+            return (self.evaluationFunction(state), None)
           elif agentIndex == numAgents and d != depth:
             return value(state, 0, d+1)
           legals = state.getLegalActions(agentIndex)
@@ -185,11 +185,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         depth = self.depth
         def value(state, agentIndex, d, A, B):
           if state.isLose():
-            return (scoreEvaluationFunction(state), None)
+            return (self.evaluationFunction(state), None)
           if state.isWin():
-            return (scoreEvaluationFunction(state), None)
+            return (self.evaluationFunction(state), None)
           if agentIndex == numAgents and d == depth:
-            return (scoreEvaluationFunction(state), None)
+            return (self.evaluationFunction(state), None)
           elif agentIndex == numAgents and d != depth:
             return value(state, 0, d+1, A, B)
           legals = state.getLegalActions(agentIndex)
@@ -245,11 +245,11 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         depth = self.depth
         def value(state, agentIndex, d):
           if state.isLose():
-            return (scoreEvaluationFunction(state), None)
+            return (self.evaluationFunction(state), None)
           if state.isWin():
-            return (scoreEvaluationFunction(state), None)
+            return (self.evaluationFunction(state), None)
           if agentIndex == numAgents and d == depth:
-            return (scoreEvaluationFunction(state), None)
+            return (self.evaluationFunction(state), None)
           elif agentIndex == numAgents and d != depth:
             return value(state, 0, d+1)
           legals = state.getLegalActions(agentIndex)
@@ -270,7 +270,27 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    successorGameState = currentGameState
+    newPos = successorGameState.getPacmanPosition()
+    newFood = successorGameState.getFood()
+    newGhostStates = successorGameState.getGhostStates()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+    gp = successorGameState.getGhostPositions()
+    nf = newFood.asList()
+    if successorGameState.isWin():
+        return 10000 + successorGameState.getScore()
+    fd = 0
+    if len(nf) > 0:
+        fd = min([manhattanDistance(newPos, food) for food in nf])
+    gd = min([manhattanDistance(newPos, g) for g in gp])
+    bd = gd
+    if gd < 2:
+        gd = -1000 
+    else:
+        gd = 0
+    if newScaredTimes[0] > 0:
+        gd *= -1
+    return successorGameState.getScore() - float(fd)/float(10) + gd + float(bd)/100
 
 # Abbreviation
 better = betterEvaluationFunction
